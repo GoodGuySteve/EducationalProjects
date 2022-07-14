@@ -68,6 +68,44 @@ def main():
 	print("lowest prime #2: " + str(lowPrime2))
 	print("higher prime #2: " + str(highPrime2))
 	print("ans2 checks out: " + str(checkPrimes(lowPrime2, highPrime2, modulus2)))
+	
+	# Problem #3 ----------------------------------------------------
+	'''modulus3 = mpz('72006226374735042527956443552558373833808445147399984182665305798191 \
+	63556901883377904234086641876639384851752649940178970835240791356868 \
+	77441155132015188279331812309091996246361896836573643119174094961348 \
+	52463970788523879939683923036467667022162701835329944324119217381272 \
+	9276147530748597302192751375739387929')'''
+	modulus3 = mpz('2039652913367') # 1166083 * 1749149 - good for testing
+	
+	# We're attempting to solve for 3p * 2q, so the easiest method is to multiply the modulus
+	# by 6 and then factor the 6 out later. This shifts our entire solution so that using the
+	# square root to find the midpoint of this new system still works properly.
+	newModulus3 = 6 * modulus3
+	weightedAverage3 = mpz(isqrt(newModulus3) + 1)
+		
+	newAverage3 = weightedAverage3
+
+	(lowPrime3, highPrime3) = findPrimes(newModulus3, newAverage3)
+	
+	# Since we calculated the primes around a modulus multiplied by 6, we need to divide the factors
+	# back out.
+	if (c_mod(lowPrime3, 2) == 0):
+		lowPrime3 = c_div(lowPrime3, 2)
+		highPrime3 = c_div(highPrime3, 3)
+	else:
+		lowPrime3 = c_div(lowPrime3, 3)
+		highPrime3 = c_div(highPrime3, 2)
+	if lowPrime3 > highPrime3:
+		# Order changed from the division, so swap them back into order
+		tmp = lowPrime3
+		lowPrime3 = highPrime3
+		highPrime3 = tmp
+	
+	print("lowest prime #3: " + str(lowPrime3))
+	print("higher prime #3: " + str(highPrime3))
+	print("ans3 checks out: " + str(checkPrimes(lowPrime3, highPrime3, modulus3)))
+	
+	
 
 	return 0
 
