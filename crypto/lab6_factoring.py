@@ -5,10 +5,10 @@ from gmpy2 import mpfr, mpz, ceil, floor, c_div, f_div, c_mod, isqrt
 # primes that make up the modulus and output them (smaller, larger).
 def getPrimes(average, modulus):
 	
-	#print("modulus: " + str(modulus))
-	#print("square root of modulus: " + str(average))
-	#print("difference of squares: " + str((average *  average) - modulus))
-	#print("midpoint: " + str(isqrt((average * average) - modulus)))
+	print("modulus: " + str(modulus))
+	print("square root of modulus: " + str(average))
+	print("difference of squares: " + str((average *  average) - modulus))
+	print("midpoint: " + str(isqrt((average * average) - modulus)))
 	
 	midpoint = mpz(isqrt((average * average) - modulus))
 	
@@ -54,7 +54,7 @@ def main():
 	print("lowest prime #1: " + str(lowPrime1))
 	print("higher prime #1: " + str(highPrime1))
 	print("ans1 checks out: " + str(checkPrimes(lowPrime1, highPrime1, modulus1)))
-	
+	'''
 	# Problem #2 ----------------------------------------------------
 	modulus2 = mpz('6484558428080716696628242653467722787263437207069762630604390703787 \
 	9730861808111646271401527606141756919558732184025452065542490671989 \
@@ -67,34 +67,47 @@ def main():
 	(lowPrime2, highPrime2) = findPrimes(modulus2, lowerBound2)
 	print("lowest prime #2: " + str(lowPrime2))
 	print("higher prime #2: " + str(highPrime2))
-	print("ans2 checks out: " + str(checkPrimes(lowPrime2, highPrime2, modulus2)))
+	print("ans2 checks out: " + str(checkPrimes(lowPrime2, highPrime2, modulus2)))'''
 	
 	# Problem #3 ----------------------------------------------------
-	'''modulus3 = mpz('72006226374735042527956443552558373833808445147399984182665305798191 \
+	modulus3 = mpz('72006226374735042527956443552558373833808445147399984182665305798191 \
 	63556901883377904234086641876639384851752649940178970835240791356868 \
 	77441155132015188279331812309091996246361896836573643119174094961348 \
 	52463970788523879939683923036467667022162701835329944324119217381272 \
-	9276147530748597302192751375739387929')'''
-	modulus3 = mpz('2039652913367') # 1166083 * 1749149 - good for testing
+	9276147530748597302192751375739387929')
+	#modulus3 = mpz('2039652913367') # 1166083 * 1749149 - good for testing
 	
 	# We're attempting to solve for 3p * 2q, so the easiest method is to multiply the modulus
-	# by 6 and then factor the 6 out later. This shifts our entire solution so that using the
+	# by 24 and then factor the 24 out later. This shifts our entire solution so that using the
 	# square root to find the midpoint of this new system still works properly.
-	newModulus3 = 6 * modulus3
-	weightedAverage3 = mpz(isqrt(newModulus3) + 1)
+	newModulus3 = 24 * modulus3
+	weightedAverage3 = mpz((isqrt(newModulus3) + 1))
 		
 	newAverage3 = weightedAverage3
 
-	(lowPrime3, highPrime3) = findPrimes(newModulus3, newAverage3)
+	'''Debug output here should be:
+	modulus: 12237917480202
+	square root of modulus: 3789807 <- should be value of newAverage3
+	difference of squares: 2124719617047
+	midpoint: 1457641
+	preliminary3 lowPrime: 2332166
+	preliminary3 highPrime: 5247447
+	'''
 	
-	# Since we calculated the primes around a modulus multiplied by 6, we need to divide the factors
+	(lowPrime3, highPrime3) = getPrimes(newAverage3, newModulus3)
+	#(lowPrime3, highPrime3) = findPrimes(newModulus3, newAverage3)
+	print("preliminary3 lowPrime: " + str(lowPrime3))
+	print("preliminary3 highPrime: " + str(highPrime3))
+	print("preliminary3 checks out: " + str(checkPrimes(lowPrime3, highPrime3, newModulus3)))
+	
+	# Since we calculated the primes around a modulus multiplied by 24, we need to divide the factors
 	# back out.
-	if (c_mod(lowPrime3, 2) == 0):
-		lowPrime3 = c_div(lowPrime3, 2)
-		highPrime3 = c_div(highPrime3, 3)
+	if (c_mod(lowPrime3, 6) == 0):
+		lowPrime3 = c_div(lowPrime3, 6)
+		highPrime3 = c_div(highPrime3, 4)
 	else:
-		lowPrime3 = c_div(lowPrime3, 3)
-		highPrime3 = c_div(highPrime3, 2)
+		lowPrime3 = c_div(lowPrime3, 4)
+		highPrime3 = c_div(highPrime3, 6)
 	if lowPrime3 > highPrime3:
 		# Order changed from the division, so swap them back into order
 		tmp = lowPrime3
