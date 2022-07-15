@@ -1,14 +1,15 @@
+import sys
 import gmpy2
-from gmpy2 import mpfr, mpz, ceil, floor, c_div, f_div, c_mod, isqrt
+from gmpy2 import mpfr, mpz, ceil, floor, c_div, f_div, c_mod, isqrt, invert, powmod
 
 # Given an average of the two primes and the modulus p*q, calculate the two 
 # primes that make up the modulus and output them (smaller, larger).
 def getPrimes(average, modulus):
 	
-	print("modulus: " + str(modulus))
+	'''print("modulus: " + str(modulus))
 	print("square root of modulus: " + str(average))
 	print("difference of squares: " + str((average *  average) - modulus))
-	print("midpoint: " + str(isqrt((average * average) - modulus)))
+	print("midpoint: " + str(isqrt((average * average) - modulus)))'''
 	
 	midpoint = mpz(isqrt((average * average) - modulus))
 	
@@ -54,7 +55,7 @@ def main():
 	print("lowest prime #1: " + str(lowPrime1))
 	print("higher prime #1: " + str(highPrime1))
 	print("ans1 checks out: " + str(checkPrimes(lowPrime1, highPrime1, modulus1)))
-	'''
+	
 	# Problem #2 ----------------------------------------------------
 	modulus2 = mpz('6484558428080716696628242653467722787263437207069762630604390703787 \
 	9730861808111646271401527606141756919558732184025452065542490671989 \
@@ -67,7 +68,7 @@ def main():
 	(lowPrime2, highPrime2) = findPrimes(modulus2, lowerBound2)
 	print("lowest prime #2: " + str(lowPrime2))
 	print("higher prime #2: " + str(highPrime2))
-	print("ans2 checks out: " + str(checkPrimes(lowPrime2, highPrime2, modulus2)))'''
+	print("ans2 checks out: " + str(checkPrimes(lowPrime2, highPrime2, modulus2)))
 	
 	# Problem #3 ----------------------------------------------------
 	modulus3 = mpz('72006226374735042527956443552558373833808445147399984182665305798191 \
@@ -84,15 +85,6 @@ def main():
 	weightedAverage3 = mpz((isqrt(newModulus3) + 1))
 		
 	newAverage3 = weightedAverage3
-
-	'''Debug output here should be:
-	modulus: 12237917480202
-	square root of modulus: 3789807 <- should be value of newAverage3
-	difference of squares: 2124719617047
-	midpoint: 1457641
-	preliminary3 lowPrime: 2332166
-	preliminary3 highPrime: 5247447
-	'''
 	
 	(lowPrime3, highPrime3) = getPrimes(newAverage3, newModulus3)
 	#(lowPrime3, highPrime3) = findPrimes(newModulus3, newAverage3)
@@ -118,7 +110,47 @@ def main():
 	print("higher prime #3: " + str(highPrime3))
 	print("ans3 checks out: " + str(checkPrimes(lowPrime3, highPrime3, modulus3)))
 	
+	# Problem #4 --------------------------------------------------------------
+	# This problem reuses results from problem #1
+	modulus4 = modulus1
+	lowPrime4 = lowPrime1
+	highPrime4 = highPrime1
+	pkcsEncryptionExponent = mpz('65537')
+	elemsInModulus = modulus4 - lowPrime4 - highPrime4 + 1 # Equivalent to phi(N) in the literature
 	
+	# Recall: decryption and encryption primes are chosen using phi(N) as modulus, NOT p*q
+	pkcsDecryptionExponent = invert(pkcsEncryptionExponent, elemsInModulus)
+	
+	ciphertext4 = mpz('22096451867410381776306561134883418017410069787892831071731839143676135600120538004282329650473509424343946219751512256465839967942889460764542040581564748988013734864120452325229320176487916666402997509188729971690526083222067771600019329260870009579993724077458967773697817571267229951148662959627934791540')
+
+	if (powmod(ciphertext4, elemsInModulus, modulus4) != 1):
+		print("Error: elemsInModulus was miscalculated as " + str(elemsInModulus))
+
+	pkcsPlaintext4 = powmod(ciphertext4, pkcsDecryptionExponent, modulus4)
+	
+	# Now strip the pkcs parts to print the raw message
+	pkcsBytes = gmpy2.to_binary(pkcsPlaintext4)[2:] # to_binary inserts a 2-byte header
+	
+	# Bytes are supposed to be in big-endian format. Since we were just working with it as a
+	# large integer, we need to adjust for that. 
+	if (sys.byteorder == 'little'):
+		pkcsBytes = pkcsBytes[::-1]
+	
+	print("PKCS-encoded Plaintext: " + str(pkcsBytes))
+	
+	if pkcsBytes[0] != 2:
+		print("Error: PKCS header not present!")
+	
+	plaintextStart = -1
+	for i in range(1, len(pkcsBytes)):
+		if pkcsBytes[i] == 0:
+			plaintextStart = i + 1
+			break
+	if (plaintextStart == -1):
+		print ("Error: could not find 0x00 separator in plaintext4")
+	else:
+		plaintext4 = str(bytes(pkcsBytes[plaintextStart:]))
+		print(plaintext4)
 
 	return 0
 
